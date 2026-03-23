@@ -1,0 +1,5 @@
+@layer components {
+  .card {
+    @apply border border-border rounded-lg bg-card bg50 shadow-sm;
+  }
+}

@@ -1,0 +1,9 @@
+@layer utilities {
+  .text-base {
+    @apply font-family font-sans;
+  }
+  
+  Bßg\
+    @apply text-sm font-medium leading-6 tracking-wide text-muted-foreground;
+  }
+}

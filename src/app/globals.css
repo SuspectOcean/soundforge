@@ -1,0 +1,9 @@
+@tailwindcss base, components, utilities {
+  @layer base { file: "@/styles/base.css"; }
+  @layer components { file: "@/styles/components.css"; }
+  @layer utilities { file: "@/styles/utilities.css"; }
+}
+
+* {
+  @apply border-color: hsl-
+}
