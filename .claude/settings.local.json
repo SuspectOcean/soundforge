@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Bash(npx shadcn@latest add card input select slider tabs badge progress dialog sonner textarea label separator avatar dropdown-menu sheet tooltip -y)"
+    ]
+  }
+}
