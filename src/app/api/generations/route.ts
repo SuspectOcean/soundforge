@@ -10,11 +10,17 @@ export async function GET(req: Request) {
 
   const { searchParams } = new URL(req.url);
   const themeId = searchParams.get("themeId");
+  const status = searchParams.get("status");
+  const search = searchParams.get("search");
   const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
   const offset = parseInt(searchParams.get("offset") || "0");
 
   const where: Record<string, unknown> = { userId: session.user.id };
   if (themeId) where.themeId = themeId;
+  if (status) where.status = status;
+  if (search) {
+    where.contextDescription = { contains: search, mode: "insensitive" };
+  }
 
   const [generations, total] = await Promise.all([
     prisma.generation.findMany({
