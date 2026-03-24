@@ -7,7 +7,7 @@ datasource db {
   provider = "postgresql"
 }
 
-// ─── Auth.js Models ───
+// âââ Auth.js Models âââ
 
 model Account {
   id                String  @id @default(cuid())
@@ -45,7 +45,7 @@ model VerificationToken {
   @@unique([identifier, token])
 }
 
-// ─── Application Models ───
+// âââ Application Models âââ
 
 model User {
   id            String    @id @default(cuid())
