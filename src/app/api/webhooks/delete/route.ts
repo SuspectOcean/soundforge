@@ -8,11 +8,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { promptBase, title, description } = await req.json();
+  const { id } = await req.json();
 
-  const theme = await prisma.soundTheme.create({
-    data: { userId, promptBase, title, description },
+  await prisma.webhook.delete({
+    where: { id },
   });
 
-  return NextResponse.json({ id: theme.id }, { status: 201 });
+  return NextResponse.json({ success: true }, { status: 200 });
 }

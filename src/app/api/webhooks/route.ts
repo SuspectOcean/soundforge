@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "A/lib/db";
+import { prisma } from "@/lib/db";
 
 export async function POST(req: Request) {
   const session = await auth();
@@ -8,11 +8,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { promptBase, title, description } = await req.json();
+  const { webhookUrl, events } = await req.json();
 
-  const theme = await prisma.soundTheme.create({
-    data: { userId, promptBase, title, description },
+  const webhook = await prisma.webhook.create({
+    data: { userId: session.user.id, webhookUrl, events },
   });
 
-  return NextResponse.json({ id: theme.id }, { status: 201 });
+  return NextResponse.json({ id: webhook.id }, { status: 201 });
 }
