@@ -17,19 +17,15 @@ export async function startMusicGeneration(params: {
     normalization_strategy: "loudness",
   };
 
-  const options: Record<string, unknown> = {
-    model: "meta/musicgen",
+  const prediction = await replicate.predictions.create({
+    version: "671ac645ce5e552cc63a54a2bbff63fcf798043055d2dac5fc9e36a837eedcfb",
     input,
-  };
+    ...(params.webhookUrl && {
+      webhook: params.webhookUrl,
+      webhook_events_filter: ["completed"],
+    }),
+  } as Parameters<typeof replicate.predictions.create>[0]);
 
-  if (params.webhookUrl) {
-    options.webhook = params.webhookUrl;
-    options.webhook_events_filter = ["completed"];
-  }
-
-  const prediction = await replicate.predictions.create(
-    options as Parameters<typeof replicate.predictions.create>[0]
-  );
   return prediction;
 }
 
