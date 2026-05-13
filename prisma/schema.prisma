@@ -56,33 +56,63 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  accounts    Account[]
-  sessions    Session[]
-  themes      SoundTheme[]
-  generations Generation[]
+  accounts         Account[]
+  sessions         Session[]
+  themes           SoundTheme[]
+  generations      Generation[]
+  referenceTracks  ReferenceTrack[]
 }
 
 model SoundTheme {
-  id              String   @id @default(cuid())
-  userId          String
-  name            String
-  description     String   @db.Text
-  genres          String[]
-  moods           String[]
-  era             String?
-  tempo           String?
-  instruments     String[]
-  exampleUrls     String[]
-  exampleBlobUrls String[]
-  promptBase      String   @db.Text
-  isDefault       Boolean  @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id               String   @id @default(cuid())
+  userId           String
+  name             String
+  description      String   @db.Text
+  genres           String[]
+  moods            String[]
+  era              String?
+  tempo            String?
+  instruments      String[]
+  exampleUrls      String[]
+  exampleBlobUrls  String[]
+  promptBase       String   @db.Text
+  isDefault        Boolean  @default(false)
+  referenceTrackId String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  generations Generation[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  generations    Generation[]
+  referenceTrack ReferenceTrack? @relation(fields: [referenceTrackId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+}
+
+model ReferenceTrack {
+  id                  String         @id
+  userId              String
+  originalFilename    String
+  blobUrl             String
+  mimeType            String
+  fileSize            Int
+  duration            Float?
+  bpm                 Float?
+  musicalKey          String?
+  genre               String?
+  mood                String?
+  energy              String?
+  instrumentation     String[]
+  descriptors         String[]
+  analysisStatus      AnalysisStatus @default(PENDING)
+  analysisRawResponse Json?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  themes SoundTheme[]
+
+  @@index([userId])
+  @@index([analysisStatus])
 }
 
 model Generation {
@@ -117,4 +147,11 @@ enum GenerationStatus {
   SUCCEEDED
   FAILED
   CANCELLED
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
 }

@@ -143,7 +143,7 @@ export default function LibraryPage() {
             className="pl-9"
           />
         </div>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={(v) => v !== null && setStatusFilter(v)}>
           <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Filter by status" />
           </SelectTrigger>

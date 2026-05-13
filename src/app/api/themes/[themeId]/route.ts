@@ -17,6 +17,7 @@ export async function GET(
 
   const theme = await prisma.soundTheme.findFirst({
     where: { id: themeId, userId: session.user.id },
+    include: { referenceTrack: true },
   });
 
   if (!theme) {

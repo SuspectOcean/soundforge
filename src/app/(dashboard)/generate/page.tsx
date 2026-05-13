@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -55,6 +55,15 @@ export default function GeneratePage() {
   const [loadingThemes, setLoadingThemes] = useState(true);
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
+  const pollIntervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
+
+  // Clean up all active poll intervals on unmount
+  useEffect(() => {
+    return () => {
+      pollIntervalsRef.current.forEach((interval) => clearInterval(interval));
+      pollIntervalsRef.current.clear();
+    };
+  }, []);
 
   useEffect(() => {
     async function loadThemes() {
@@ -105,35 +114,35 @@ export default function GeneratePage() {
       };
       setResults((prev) => [newResult, ...prev]);
 
-      // Poll for completion
+      // Poll for completion — stored in ref so we can clear on unmount
       const pollInterval = setInterval(async () => {
-        const statusRes = await fetch(`/api/generate/${data.id}`);
-        const statusData = await statusRes.json();
+        try {
+          const statusRes = await fetch(`/api/generate/${data.id}`);
+          const statusData = await statusRes.json();
 
-        if (statusData.status === "SUCCEEDED") {
-          clearInterval(pollInterval);
-          setResults((prev) =>
-            prev.map((r) =>
-              r.id === data.id
-                ? { ...r, ...statusData }
-                : r
-            )
-          );
-          setGenerating(false);
-          toast.success("Music generated!");
-        } else if (statusData.status === "FAILED") {
-          clearInterval(pollInterval);
-          setResults((prev) =>
-            prev.map((r) =>
-              r.id === data.id
-                ? { ...r, ...statusData }
-                : r
-            )
-          );
-          setGenerating(false);
-          toast.error("Generation failed");
+          if (statusData.status === "SUCCEEDED") {
+            clearInterval(pollInterval);
+            pollIntervalsRef.current.delete(data.id);
+            setResults((prev) =>
+              prev.map((r) => (r.id === data.id ? { ...r, ...statusData } : r))
+            );
+            setGenerating(false);
+            toast.success("Music generated!");
+          } else if (statusData.status === "FAILED") {
+            clearInterval(pollInterval);
+            pollIntervalsRef.current.delete(data.id);
+            setResults((prev) =>
+              prev.map((r) => (r.id === data.id ? { ...r, ...statusData } : r))
+            );
+            setGenerating(false);
+            toast.error("Generation failed");
+          }
+        } catch {
+          // Network error — keep polling
         }
       }, 3000);
+
+      pollIntervalsRef.current.set(data.id, pollInterval);
     } catch (err) {
       toast.error(
         err instanceof Error ? err.message : "Generation failed"
@@ -210,7 +219,7 @@ export default function GeneratePage() {
           <CardContent className="space-y-3">
             <Select
               value={selectedThemeId}
-              onValueChange={setSelectedThemeId}
+              onValueChange={(v) => v !== null && setSelectedThemeId(v)}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose a theme..." />

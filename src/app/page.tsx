@@ -58,7 +58,7 @@ export default function Home() {
       <section className="px-6 py-16 max-w-5xl mx-auto">
         <h2 className="text-2xl font-bold text-center mb-3">How It Works</h2>
         <p className="text-center text-muted-foreground mb-12 max-w-lg mx-auto">
-          Three simple steps to create professional-quality music for your content.
+          Three simple steps to create original music for your content.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors">
@@ -67,8 +67,8 @@ export default function Home() {
             </div>
             <h3 className="font-semibold mb-2">1. Define Your Vibe</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Select genres, moods, era, and instruments to create your
-              channel&apos;s unique sound theme.
+              Upload a reference track, record something, or manually pick
+              genres and moods to create your channel&apos;s sound identity.
             </p>
           </div>
           <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors">
@@ -77,8 +77,8 @@ export default function Home() {
             </div>
             <h3 className="font-semibold mb-2">2. Generate Music</h3>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Describe the moment and AI creates music that fits your
-              scene while matching your established style.
+              Describe the moment and AI creates original instrumental music
+              that fits your scene while matching your established style.
             </p>
           </div>
           <div className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border hover:border-primary/30 transition-colors">
@@ -124,13 +124,23 @@ export default function Home() {
               <Shield className="h-4 w-4 text-primary" />
             </div>
             <div>
-              <p className="font-medium text-sm">Royalty Free</p>
+              <p className="font-medium text-sm">Original Output</p>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Full rights to use in your content, no claims.
+                AI-generated original instrumentals, not copies of existing songs.
               </p>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* Disclaimer */}
+      <section className="px-6 pb-8 max-w-3xl mx-auto text-center">
+        <p className="text-xs text-muted-foreground leading-relaxed">
+          SoundForge generates original instrumental music inspired by your
+          references. While originality systems are used, SoundForge cannot
+          guarantee immunity from copyright claims or platform detection systems.
+          Always review generated tracks before publishing.
+        </p>
       </section>
 
       {/* Footer */}
