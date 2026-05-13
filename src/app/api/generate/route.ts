@@ -42,27 +42,41 @@ export async function POST(req: Request) {
     : undefined;
 
   // Start generation
-  const prediction = await startMusicGeneration({
-    prompt,
-    duration,
-    webhookUrl,
-  });
+  let predictionId: string;
+  try {
+    const prediction = await startMusicGeneration({
+      prompt,
+      duration,
+      webhookUrl,
+    });
+    predictionId = prediction.id;
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Replicate API error";
+    console.error("[generate] Replicate error:", err);
+    return NextResponse.json({ error: message }, { status: 502 });
+  }
 
   // Save to database
-  const generation = await prisma.generation.create({
-    data: {
-      userId: session.user.id,
-      themeId,
-      prompt,
-      contextDescription,
-      duration,
-      replicateId: prediction.id,
-      status: "PROCESSING",
-    },
-  });
+  try {
+    const generation = await prisma.generation.create({
+      data: {
+        userId: session.user.id,
+        themeId,
+        prompt,
+        contextDescription,
+        duration,
+        replicateId: predictionId,
+        status: "PROCESSING",
+      },
+    });
 
-  return NextResponse.json({
-    id: generation.id,
-    status: generation.status,
-  });
+    return NextResponse.json({
+      id: generation.id,
+      status: generation.status,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Database error";
+    console.error("[generate] DB error:", err);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }
