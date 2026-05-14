@@ -23,10 +23,7 @@ export async function GET(
   }
 
   // If still processing, check Replicate directly as fallback
-  if (
-    generation.status === "PROCESSING" &&
-    generation.replicateId
-  ) {
+  if (generation.status === "PROCESSING" && generation.replicateId) {
     try {
       const prediction = await checkPrediction(generation.replicateId);
 
@@ -67,8 +64,9 @@ export async function GET(
           error: updated.errorMessage,
         });
       }
-    } catch {
-      // Replicate check failed, return current DB status
+    } catch (err) {
+      console.error("[poll] Replicate check failed for", generationId, err);
+      // Fall through and return current DB status
     }
   }
 
