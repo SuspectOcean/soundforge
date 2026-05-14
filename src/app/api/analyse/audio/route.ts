@@ -51,7 +51,18 @@ export async function POST(req: Request) {
   }
 
   // Run analysis — synchronous with internal timeout
-  const result = await analyseAudio(referenceTrackId);
+  let result;
+  try {
+    result = await analyseAudio(referenceTrackId);
+  } catch (err) {
+    console.error("[analyse] Analysis failed for track", referenceTrackId, err);
+    await prisma.referenceTrack.update({
+      where: { id: referenceTrackId },
+      data: { analysisStatus: "FAILED" },
+    });
+    const message = err instanceof Error ? err.message : "Analysis failed";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 
   return NextResponse.json({
     status: "COMPLETED",
