@@ -43,6 +43,7 @@ interface GenerationResult {
   status: string;
   contextDescription?: string;
   duration?: number;
+  error?: string;
 }
 
 export default function GeneratePage() {
@@ -57,7 +58,6 @@ export default function GeneratePage() {
   const [audioEl, setAudioEl] = useState<HTMLAudioElement | null>(null);
   const pollIntervalsRef = useRef<Map<string, ReturnType<typeof setInterval>>>(new Map());
 
-  // Clean up all active poll intervals on unmount
   useEffect(() => {
     return () => {
       pollIntervalsRef.current.forEach((interval) => clearInterval(interval));
@@ -114,7 +114,6 @@ export default function GeneratePage() {
       };
       setResults((prev) => [newResult, ...prev]);
 
-      // Poll for completion — stored in ref so we can clear on unmount
       const pollInterval = setInterval(async () => {
         try {
           const statusRes = await fetch(`/api/generate/${data.id}`);
@@ -135,7 +134,7 @@ export default function GeneratePage() {
               prev.map((r) => (r.id === data.id ? { ...r, ...statusData } : r))
             );
             setGenerating(false);
-            toast.error("Generation failed");
+            toast.error(statusData.error || "Generation failed");
           }
         } catch {
           // Network error — keep polling
@@ -144,9 +143,7 @@ export default function GeneratePage() {
 
       pollIntervalsRef.current.set(data.id, pollInterval);
     } catch (err) {
-      toast.error(
-        err instanceof Error ? err.message : "Generation failed"
-      );
+      toast.error(err instanceof Error ? err.message : "Generation failed");
       setGenerating(false);
     }
   }
@@ -158,7 +155,6 @@ export default function GeneratePage() {
       return;
     }
     if (audioEl) audioEl.pause();
-
     const audio = new Audio(result.audioUrl!);
     audio.addEventListener("ended", () => setPlayingId(null));
     audio.play();
@@ -167,12 +163,8 @@ export default function GeneratePage() {
   }
 
   function handleRegenerate(result: GenerationResult) {
-    if (result.contextDescription) {
-      setContextDescription(result.contextDescription);
-    }
-    if (result.duration) {
-      setDuration(result.duration);
-    }
+    if (result.contextDescription) setContextDescription(result.contextDescription);
+    if (result.duration) setDuration(result.duration);
     window.scrollTo({ top: 0, behavior: "smooth" });
     toast("Settings loaded — tweak and regenerate!");
   }
@@ -188,7 +180,6 @@ export default function GeneratePage() {
         </p>
       </div>
 
-      {/* Theme selector */}
       {loadingThemes ? (
         <Card>
           <CardContent className="flex items-center justify-center py-6">
@@ -226,7 +217,11 @@ export default function GeneratePage() {
               </SelectTrigger>
               <SelectContent>
                 {themes.map((t) => (
-                  <SelectItem key={t.id} value={t.id}>
+                  <SelectItem
+                    key={t.id}
+                    value={t.id}
+                    label={t.name + (t.isDefault ? " (default)" : "")}
+                  >
                     {t.name}
                     {t.isDefault ? " (default)" : ""}
                   </SelectItem>
@@ -236,14 +231,10 @@ export default function GeneratePage() {
             {selectedTheme && (
               <div className="flex flex-wrap gap-1.5">
                 {selectedTheme.genres.map((g) => (
-                  <Badge key={g} variant="secondary" className="text-xs">
-                    {g}
-                  </Badge>
+                  <Badge key={g} variant="secondary" className="text-xs">{g}</Badge>
                 ))}
                 {selectedTheme.moods.slice(0, 3).map((m) => (
-                  <Badge key={m} variant="outline" className="text-xs">
-                    {m}
-                  </Badge>
+                  <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
                 ))}
               </div>
             )}
@@ -251,7 +242,6 @@ export default function GeneratePage() {
         </Card>
       )}
 
-      {/* Generation form */}
       <Card>
         <CardHeader>
           <CardTitle className="text-base">What&apos;s the music for?</CardTitle>
@@ -306,7 +296,6 @@ export default function GeneratePage() {
         </CardContent>
       </Card>
 
-      {/* Results */}
       {results.length > 0 && (
         <div className="space-y-3">
           <h2 className="text-lg font-semibold">Results</h2>
@@ -346,6 +335,11 @@ export default function GeneratePage() {
                     <p className="text-xs text-muted-foreground">
                       {result.duration}s &middot; {result.status.toLowerCase()}
                     </p>
+                    {result.status === "FAILED" && result.error && (
+                      <p className="text-xs text-red-500 mt-0.5 truncate" title={result.error}>
+                        {result.error}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex gap-1 shrink-0">
